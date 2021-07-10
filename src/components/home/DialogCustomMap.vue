@@ -6,15 +6,26 @@
         @input="$emit('change-visibility')"
     >
         <v-card class="dialog-customs">
-            <v-btn class="close-btn" icon @click="$emit('change-visibility')">
+            <v-btn
+                class="close-btn"
+                icon
+                @click="$emit('change-visibility')"
+            >
                 <v-icon>mdi-close</v-icon>
             </v-btn>
             <v-card-title>
                 <p>{{ $t('DialogCustomMap.title') }}</p>
             </v-card-title>
             <v-card-text>
-                <v-row no-gutters class="dialog-customs__row">
-                    <v-col md="5" sm="12" class="mr-6">
+                <v-row
+                    no-gutters
+                    class="dialog-customs__row"
+                >
+                    <v-col
+                        md="5"
+                        sm="12"
+                        class="mr-6"
+                    >
                         <v-skeleton-loader
                             v-if="loading"
                             class="mx-auto"
@@ -46,7 +57,10 @@
                                     color="secondary"
                                     @click="saveGeoJson"
                                 >
-                                    <v-icon left dark>
+                                    <v-icon
+                                        left
+                                        dark
+                                    >
                                         mdi-cloud-download
                                     </v-icon>
                                     {{ $t('DialogCustomMap.download') }}
@@ -56,7 +70,10 @@
                     </v-col>
 
                     <v-col>
-                        <v-radio-group v-model="type" row>
+                        <v-radio-group
+                            v-model="type"
+                            row
+                        >
                             <v-radio
                                 :label="$t('DialogCustomMap.text')"
                                 value="text"
@@ -106,7 +123,11 @@
             </v-card-text>
             <v-card-actions>
                 <div class="flex-grow-1" />
-                <v-btn dark color="primary" @click="$emit('change-visibility')">
+                <v-btn
+                    dark
+                    color="primary"
+                    @click="$emit('change-visibility')"
+                >
                     {{ $t('DialogCustomMap.OK') }}
                 </v-btn>
             </v-card-actions>

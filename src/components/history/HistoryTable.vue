@@ -96,15 +96,11 @@
                             :rounds="item.rounds"
                         />
                     </div>
-                    <HistoryMapClassic
-                        v-if="item.gameMode === $t('modes.classic')"
+                    <HistoryMapCountry
+                        v-if="item.gameMode === $t('modes.country')"
                         :item="item"
                     />
-                    <HistoryMapArea
-                        v-else
-                        :is-country="item.gameMode === $t('modes.country')"
-                        :item="item"
-                    />
+                    <HistoryMapClassic v-else :item="item" />
                 </td>
             </template>
         </v-data-table>
@@ -115,15 +111,16 @@
 </template>
 <script>
 import { mapActions, mapState } from 'vuex';
+import { GAME_MODE } from '../../constants';
 import { download } from '../../utils';
 import HistoryMapClassic from './gameResult/HistoryMapClassic';
-import HistoryMapArea from './gameResult/HistoryMapArea';
+import HistoryMapCountry from './gameResult/HistoryMapCountry';
 import HistoryTimeDetail from './gameResult/HistoryTimeDetail';
 export default {
     name: 'HistoryTable',
     components: {
         HistoryMapClassic,
-        HistoryMapArea,
+        HistoryMapCountry,
         HistoryTimeDetail,
     },
     data() {
@@ -210,7 +207,10 @@ export default {
                 mode: g.multiplayer
                     ? this.$t('DialogRoom.withFriends')
                     : this.$t('DialogRoom.singlePlayer'),
-                gameMode: this.$t('modes.' + g.mode),
+                gameMode:
+                    g.mode === GAME_MODE.COUNTRY
+                        ? this.$t('modes.country')
+                        : this.$t('modes.classic'),
                 timeString:
                     g.timeLimitation === 0
                         ? this.$t('CardRoomTime.infinite')

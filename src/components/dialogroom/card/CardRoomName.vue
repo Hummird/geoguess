@@ -13,7 +13,7 @@
                             v-model="roomName"
                             maxlength="10"
                             autofocus
-                            :error-messages="roomErrorMessage"
+                            :error-messages="errorMessage"
                             @keyup.enter="searchRoom"
                         />
                     </v-col>
@@ -25,7 +25,7 @@
             <v-btn dark depressed color="#FF5252" @click="cancel">
                 {{ $t('cancel') }}
             </v-btn>
-            <v-btn dark depressed color="#43B581" @click="searchRoom(roomName)">
+            <v-btn dark depressed color="#43B581" @click="searchRoom">
                 {{ $t('next') }}
             </v-btn>
         </v-card-actions>
@@ -33,24 +33,26 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState } from 'vuex';
 import CardRoomMixin from './mixins/CardRoomMixin';
 export default {
     mixins: [CardRoomMixin],
+    props: ['errorMessage'],
     data() {
         return {
             roomName: '',
         };
     },
-    computed: {    
-        ...mapState('settingsStore', ['roomErrorMessage']),
-  
+    computed: {
         ...mapState({
             streamerMode: (state) => state.homeStore.streamerMode,
         }),
     },
     methods: {
-        ...mapActions('settingsStore', ['searchRoom']),
+        searchRoom() {
+            // Pass room name to parent component
+            this.$emit('searchRoom', this.roomName);
+        },
     },
 };
 </script>

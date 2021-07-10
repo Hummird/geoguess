@@ -17,8 +17,7 @@
                     <v-col cols="12">
                         <v-text-field
                             id="inputPlayerName"
-                            :value="name"
-                            @input="(n) => setPlayerName(n)"
+                            v-model="playerName"
                             maxlength="10"
                             autofocus
                             :label="$t('CardRoomPlayerName.input')"
@@ -61,13 +60,13 @@
                 {{ $t('cancel') }}
             </v-btn>
             <v-btn
-                v-if="playerNumber === 1"
+                v-if="firstPlayer"
                 id="btnStart"
                 dark
                 depressed
                 color="#43B581"
                 :disabled="players.length < 2"
-                @click="startGame"
+                @click="start"
             >
                 {{ $t('next') }}
             </v-btn>
@@ -76,19 +75,32 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState } from 'vuex';
 import CardRoomMixin from './mixins/CardRoomMixin';
 export default {
     mixins: [CardRoomMixin],
+    props: {
+        room: {
+            type: Object,
+            required: true,
+        },
+        roomName: {
+            type: String,
+            required: true,
+        },
+        firstPlayer: {
+            type: Boolean,
+            required: true,
+        },
+    },
+    data() {
+        return {
+            players: [],
+            playerName: '',
+            invalidName: false,
+        };
+    },
     computed: {
-        ...mapState('settingsStore', [
-            'playerNumber',
-            'roomName',
-            'players',
-            'name',
-            'invalidName',
-        ]),
-
         ...mapState({
             streamerMode: (state) => state.homeStore.streamerMode,
         }),
@@ -96,8 +108,34 @@ export default {
             return window.origin + '/room/' + this.roomName;
         },
     },
+    watch: {
+        playerName(val) {
+            if (!this.players.includes(val)) {
+                this.invalidName = false;
+                this.$emit('setPlayerName', val);
+            } else {
+                this.invalidName = true;
+            }
+        },
+    },
+    mounted() {
+        this.room.child('playerName').on('value', (snapshot) => {
+            this.players = Object.values(snapshot.val());
+        });
+
+        this.room.on('value', (snapshot) => {
+            if (snapshot.hasChild('size') && snapshot.hasChild('streetView')) {
+                this.$emit('start');
+            }
+        });
+    },
     methods: {
-        ...mapActions('settingsStore', ['startGame', 'setPlayerName']),
+        start() {
+            this.room.update({
+                size: this.players.length,
+            });
+            this.$emit('start');
+        },
         copy() {
             this.$copyText(this.roomUrl, this.$refs.roomUrl);
         },

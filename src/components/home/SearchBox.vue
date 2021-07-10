@@ -40,26 +40,9 @@
         />
 
         <div class="search-box__btns">
-            <v-btn
-                class="search-box__btns__btn"
-                rounded
-                color="primary"
-                large
-                @click="openDialog()"
-            >
-                {{ $t('DialogRoom.singlePlayer') }}
-            </v-btn>
+            <DialogRoom single-player :place="place" :geo-json="geoJson" />
 
-            <v-btn
-                class="search-box__btns__btn"
-                rounded
-                color="secondary"
-                large
-                @click="openDialog(false)"
-            >
-                {{ $t('DialogRoom.withFriends') }}
-            </v-btn>
-            <DialogRoom />
+            <DialogRoom :place="place" :geo-json="geoJson" />
         </div>
     </div>
 </template>
@@ -118,17 +101,7 @@ export default {
     mounted() {
         this.loadHistory();
     },
-    methods: {
-        ...mapActions(['loadHistory', 'loadPlaceGeoJSON']),
-        ...mapActions('settingsStore', ['openDialogRoom']),
-        openDialog(isSinglePlayer) {
-            if (this.place) {
-                this.loadPlaceGeoJSON(this.place);
-            }
-
-            this.openDialogRoom(isSinglePlayer);
-        },
-    },
+    methods: mapActions(['loadHistory']),
 };
 </script>
 <style lang="scss">
@@ -148,11 +121,6 @@ export default {
     .search-box__btns {
         display: flex;
         justify-content: space-around;
-        &__btn {
-            width: 40%;
-            padding: 0 5em;
-            font-size: 1.1rem;
-        }
     }
 }
 @media (max-width: 410px) {

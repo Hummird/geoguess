@@ -52,7 +52,8 @@ export default new Router({
             beforeEnter: (to, from, next) => {
                 let enterGame = true;
                 if (
-                    !Object.values(GAME_MODE).includes(to.params.modeSelected)
+                    to.params.modeSelected !== GAME_MODE.CLASSIC &&
+                    to.params.modeSelected !== GAME_MODE.COUNTRY
                 ) {
                     enterGame = false;
                 }

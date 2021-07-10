@@ -5,9 +5,7 @@ module.exports = {
         es6: true,
     },
     extends: [
-        ...(process.env.NODE_ENV === 'production'
-            ? ['eslint:recommended']
-            : []),
+        'eslint:recommended',
         'plugin:vue/essential',
     ],
     globals: {
@@ -22,10 +20,9 @@ module.exports = {
     },
     plugins: ['vue', 'prettier'],
     rules: {
-        'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-        'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+        'no-console': 'warn',
         semi: ['error', 'always'],
-        'vue/html-indent': ['warn', 4],
+        "vue/html-indent": ['warn', 4]
     },
     overrides: [
         {
