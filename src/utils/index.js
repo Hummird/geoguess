@@ -64,7 +64,7 @@ export function isGeoJSONValid(geojson) {
     try {
         let obj = geojson;
         if (obj.type === 'FeatureCollection' && obj.features) {
-            obj.features.map((f) => {
+            obj.features.forEach((f) => {
                 if (
                     !['Point', 'Polygon', 'MultiPolygon'].includes(
                         f.geometry.type
@@ -73,6 +73,15 @@ export function isGeoJSONValid(geojson) {
                     throw new Error('Not Point Polygon MultiPolygon');
                 }
             });
+            return true;
+        } else if (obj.type === 'Feature') {
+            if (
+                !['Point', 'Polygon', 'MultiPolygon'].includes(
+                    obj.geometry.type
+                )
+            ) {
+                throw new Error('Not Point Polygon MultiPolygon');
+            }
             return true;
         } else {
             return false;
@@ -124,9 +133,12 @@ export function getAreaCodeNameFromLatLng(latLng, errorFunction, areaParams) {
         .then(({ status, data }) => {
             if (status === 200 && data) {
                 if (areaParams && areaParams.nominatimResultPath) {
-                    return areaParams.nominatimResultPath
-                        .split('.')
-                        .reduce((o, i) => o[i], data);
+                    const areaName = getValueInObjectWithPath(data, areaParams.nominatimResultPath);
+
+                    if(areaName === undefined && areaParams.nominatimFallbackResultPath)
+                      return getValueInObjectWithPath(data, areaParams.nominatimFallbackResultPath);
+
+                    return areaName;
                 }
 
                 if (data.extratags['ISO3166-1:alpha2']) {
@@ -139,6 +151,10 @@ export function getAreaCodeNameFromLatLng(latLng, errorFunction, areaParams) {
             errorFunction();
             return null;
         });
+}
+
+export function getValueInObjectWithPath(obj, path) {
+    return path.split('.').reduce((o, i) => o ? o[i] : undefined, obj);
 }
 
 export function getSelectedPos(selectedPos, gameMode) {

@@ -24,7 +24,23 @@
         "limitationDescription": "Şu anda oyunun maliyetinin yüksek olmaması için günlük kota belirledim.            Eğer harita yüklenmediyse o günkü kota aşılmış anlamına gelir.            Kota, Pasifik Saatine göre gece yarısı sıfırlanacaktır. Rahatsızlıktan dolayı üzgünüm.             Oyun açık kaynak kodlu olduğundan dolayı kendi oyun sunucunuzu kurabilir ve sınırsızca oynayabilirsiniz.",
         "play": "Oyna",
         "streamerModeActivate": "Yayıncı modu aktif",
-        "streamerModeDetails": "Bağlantılar ve oda isimleri artık gizli"
+        "streamerModeDetails": "Bağlantılar ve oda isimleri artık gizli",
+        "mapSavedAlert": {
+            "title": "Map saved 🎉",
+            "subtitle": "You will find it in your map lists"
+        },
+        "HomeCard": {
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "HomeCardMode": {
+            "map": "Map",
+            "area": "Area"
+        },
+        "Sections": {
+            "areasTitle": "Areas",
+            "mapsTitle": "Maps"
+        }
     },
     "StreetView": {
         "nearby": {
@@ -75,7 +91,13 @@
         "edit": "Haritayı Düzenle",
         "fileLabel": "GeoJSON dosyası seç",
         "OK": "Onayla",
-        "download": "GeoJSON İndir"
+        "download": "GeoJSON İndir",
+        "Clean": "Clean",
+        "save": "save",
+        "inputName": {
+            "label": "Map Name",
+            "placeholder": "My favorite place"
+        }
     },
     "History": {
         "title": "Geçmiş",
@@ -85,6 +107,7 @@
         "distance": "Mesafe",
         "points": "Puanlar",
         "rank": "Rütbe",
+        "actions": "Actions",
         "search": "Ara",
         "exportGeoSave": "GeoSave'i Dışarı Aktar",
         "importGeoSave": "GeoSave'i İçeri Aktar",
@@ -115,6 +138,11 @@
         "title": "Bir zaman sınırlaması ayarlayın.",
         "infinite": "Sınırsız"
     },
+    "CardRoomMap": {
+        "title": "Define your map",
+        "loadBtn": "Load MAP",
+        "reset": "Reset"
+    },
     "CardRoomSettings": {
         "title": "Oyun Ayarları",
         "modeLabel": "Oyun modu seç",
@@ -129,7 +157,9 @@
         "scoreModes": {
             "normal": "normal",
             "time": "zaman"
-        }
+        },
+        "selectAreas": "Select Areas",
+        "moreSettings": "More settings"
     },
     "CardRoomDifficulty": {
         "title": "Zorluk seviyesi seç.",
@@ -154,7 +184,8 @@
     },
     "modes": {
         "classic": "Klasik",
-        "country": "Ülke seç"
+        "country": "Ülke seç",
+        "custom_area": "Pick"
     },
     "Demo": {
         "message": "Eğer bir projede katkınızın bulunmasını istiyorsanız kapımız her zaman açık : Çeviri🔠, Haritacı 🌍, Yazılımcı 💻, Fikir 💡, Beta test 👀.",

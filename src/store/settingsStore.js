@@ -38,7 +38,8 @@ export default {
     state: () => ({
         //Dialog
         isOpenDialogRoom: false,
-        currentComponent: 'settings',
+        loadRoom: false,
+        currentComponent: 'settingsMap',
         singlePlayer: true,
 
         // ROOM
@@ -49,13 +50,18 @@ export default {
         // SETTINGS
         gameSettings: new GameSettings(),
         players: [],
-        name: '',
+        name: localStorage.getItem('playerName') || '',
         invalidName: false,
     }),
     mutations: {
         [MutationTypes.SETTINGS_SET_ROOM](state, roomName) {
             state.room = firebase.database().ref(roomName);
             state.roomName = roomName;
+            // Open Modal
+            if (!state.isOpenDialogRoom) {
+                state.loadRoom = true;
+                state.isOpenDialogRoom = true;
+            }
 
             state.room.once('value', (snapshot) => {
                 if (snapshot.child('started').val()) {
@@ -72,15 +78,19 @@ export default {
                 const playerNumber = numberOfPlayers + 1;
 
                 state.playerNumber = playerNumber;
+                const name = state.name === '' ? i18n.t(
+                                'CardRoomPlayerName.anonymousPlayerName'
+                            ) + playerNumber : state.name;
 
+                state.room.child('playerName/player'+playerNumber).onDisconnect().remove();
+
+                
                 if (numberOfPlayers === 0) {
                     // Put the tentative player's name into the room node
                     // So that other player can't enter as the first player while the player decide the name and room size
                     state.room.child('playerName').update(
                         {
-                            player1: i18n.t(
-                                'CardRoomPlayerName.anonymousPlayerName'
-                            ),
+                            player1: name,
                         },
                         (error) => {
                             if (!error) {
@@ -89,12 +99,8 @@ export default {
                                     createdAt:
                                         firebase.database.ServerValue.TIMESTAMP,
                                 });
-
-                                state.currentComponent = 'settings';
-                                 // Open Modal
-                                if (!state.isOpenDialogRoom) {
-                                    state.isOpenDialogRoom = true;
-                                }
+                                state.loadRoom = false;
+                                state.currentComponent = 'settingsMap';
                             }
                         }
                     );
@@ -103,21 +109,15 @@ export default {
                     state.room
                         .child('playerName/player' + playerNumber)
                         .set(
-                            i18n.t('CardRoomPlayerName.anonymousPlayerName') +
-                                playerNumber,
+                            name,
                             (error) => {
                                 if (!error) {
+                                    state.loadRoom = false;
                                     state.currentComponent = 'playerName';
-                                    // Open Modal
-                                    if (!state.isOpenDialogRoom) {
-                                        state.isOpenDialogRoom = true;
-                                    }
                                 }
                             }
                         );
                 }
-                
-               
             });
         },
         [MutationTypes.SETTINGS_SET_ROOM_ERROR](state, error) {
@@ -136,12 +136,18 @@ export default {
                 ...settings,
             };
         },
+        [MutationTypes.SETTINGS_SET_DIFFICULTY](state, difficulty){
+            state.difficulty = difficulty;
+        },
+        [MutationTypes.SETTINGS_SET_BBOX](state, bbox){
+            state.bboxObj = bbox;
+        },
         [MutationTypes.SETTINGS_SET_OPEN_DIALOG_ROOM](state, open) {
             state.isOpenDialogRoom = open;
         },
         [MutationTypes.SETTINGS_SET_MODE_DIALOG_ROOM](state, singlePlayer) {
             state.singlePlayer = singlePlayer;
-            state.currentComponent = singlePlayer ? 'settings' : 'roomName';
+            state.currentComponent = singlePlayer ? 'settingsMap' : 'roomName';
         },
 
         [MutationTypes.SETTINGS_SET_STEP_DIALOG_ROOM](state, step) {
@@ -165,6 +171,7 @@ export default {
             state.playerNumber = 0;
             state.roomErrorMessage = null;
             state.players = [];
+            state.gameSettings = new GameSettings();
         },
     },
 
@@ -175,7 +182,7 @@ export default {
     },
 
     actions: {
-        closeDialogRoom({ state, commit }, cleanRoom = true) {
+        closeDialogRoom({ state, commit, dispatch }, cleanRoom = true) {
             commit(MutationTypes.SETTINGS_SET_OPEN_DIALOG_ROOM, false);
 
             // Remove the room
@@ -194,6 +201,7 @@ export default {
                 }
             }
 
+            dispatch('setMapLoaded', new Map(), { root: true });
             commit(MutationTypes.SETTINGS_RESET);
         },
         openDialogRoom({ commit }, isSinglePlayer = true) {
@@ -202,7 +210,6 @@ export default {
         },
 
         searchRoom({ commit, dispatch, state }, roomName) {
-       
             commit(MutationTypes.SETTINGS_SET_MODE_DIALOG_ROOM, false);
             if (roomName == '') {
                 commit(
@@ -212,7 +219,7 @@ export default {
             } else {
                 commit(MutationTypes.SETTINGS_SET_ROOM, roomName);
             }
-            
+
             state.room.on('value', (snapshot) => {
                 if (snapshot.child('playerName').exists())
                     state.players = Object.values(
@@ -232,18 +239,20 @@ export default {
         setSettings({ commit, state, rootState, dispatch }) {
             let difficulty = 2000;
             let bboxObj;
-            if (rootState.homeStore.geojson) {
-                bboxObj = bbox(rootState.homeStore.geojson);
+            if (rootState.homeStore.map.geojson) {
+                bboxObj = bbox(rootState.homeStore.map.geojson);
+                commit(MutationTypes.SETTINGS_SET_BBOX, bboxObj);
 
                 difficulty = getMaxDistanceBbox(bboxObj) / 10;
             }
+            commit(MutationTypes.SETTINGS_SET_DIFFICULTY, difficulty);
             if (!state.room) {
                 router.push({
                     name: 'street-view',
                     params: {
                         ...state.gameSettings,
-                        difficulty: difficulty,
-                        placeGeoJson: rootState.homeStore.geojson,
+                        difficulty,
+                        placeGeoJson: rootState.homeStore.map.geojson,
                         bboxObj: bboxObj,
                     },
                 });
@@ -253,8 +262,8 @@ export default {
                     {
                         ...state.gameSettings,
                         timeLimitation: state.gameSettings.time,
-                        difficulty: difficulty,
-                        placeGeoJson: rootState.homeStore.geojson,
+                        difficulty,
+                        ...(rootState.homeStore.map.geojson && {placeGeoJson: rootState.homeStore.map.geojson}),
                         ...(bboxObj && { bboxObj: bboxObj }),
                     },
                     (error) => {
@@ -269,14 +278,17 @@ export default {
             }
         },
 
-        setPlayerName({ commit }, playerName) {
+        setPlayerName({ commit, state }, playerName) {
             if (playerName === '') {
                 commit(
                     MutationTypes.SETTINGS_SET_PLAYER_NAME,
-                    i18n.t('CardRoomPlayerName.anonymousPlayerName')
+                    i18n.t('CardRoomPlayerName.anonymousPlayerName') +' '+ state.playerNumber
                 );
+            }else{
+                localStorage.setItem('playerName', playerName);
+                commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, playerName);
             }
-            commit(MutationTypes.SETTINGS_SET_PLAYER_NAME, playerName);
+
         },
         startGame({ state, dispatch, rootState }) {
             let gameParams = {};
@@ -284,7 +296,7 @@ export default {
                 gameParams = {
                     ...state.gameSettings,
                     difficulty: state.difficulty,
-                    placeGeoJson: rootState.homeStore.geojson,
+                    placeGeoJson: rootState.homeStore.map.geojson,
                     bboxObj: state.bboxObj,
                 };
                 // Set flag started
@@ -324,7 +336,7 @@ export default {
                     roomName: state.roomName,
                     playerName: state.name,
                     playerNumber: state.playerNumber,
-                    placeGeoJson: rootState.homeStore.geojson,
+                    placeGeoJson: rootState.homeStore.map.geojson,
                     multiplayer: true,
                 },
             });
